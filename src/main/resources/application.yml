@@ -1,0 +1,47 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: "jdbc:mysql://localhost:3307/demo?autoReconnect=true&useUnicode=true&characterEncoding=UTF-8&useSSL=true&serverTimezone=UTC&tinyInt1isBit=false"
+    username: root
+    password: 1234
+    hikari:
+      auto-commit: false
+      connection-test-query: SELECT 1
+      minimum-idle: 10
+      maximum-pool-size: 50
+      transaction-isolation: TRANSACTION_READ_UNCOMMITTED
+      pool-name: pool-jiniworld
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        implicit_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
+        physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+        ddl-auto: create
+    open-in-view: false
+    show-sql: true
+  logging:
+    level:
+      com:
+        example:
+          demo: DEBUG
+      org:
+        springframework: DEBUG
+      root: DEBUG
+  jwt:
+    secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LWNjbGltZS1zZWNyZXQta2V5LWFpYXJhLWthbmctamktaHlvdW5nLXRlc3Q=
+#    testtesttesttesttesttesttesttesttesttesttesttest
+  redis:
+    port: 6379
+    host: localhost
+logging:
+  pattern:
+    console: "[%d{HH:mm:ss.SSS}][%-5level][%logger.%method:line%line] - %msg%n"
+  level:
+    org:
+      springframework: DEBUG
+    com:
+      example:
+        demo: DEBUG
