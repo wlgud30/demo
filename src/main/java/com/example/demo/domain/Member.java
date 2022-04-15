@@ -1,5 +1,6 @@
 package com.example.demo.domain;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,7 +36,8 @@ public class Member{
     @Column(name = "username")
     private String username;
 
-    @OneToMany(mappedBy = "member", cascade = ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "member", cascade = ALL, orphanRemoval = true,fetch = FetchType.EAGER)
+    @JsonManagedReference
     @Builder.Default
     private Set<Authority> authorities = new HashSet<>();
 

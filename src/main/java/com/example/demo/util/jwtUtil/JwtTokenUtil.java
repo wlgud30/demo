@@ -1,5 +1,6 @@
 package com.example.demo.util.jwtUtil;
 
+import com.example.demo.config.security.CustomMemberDetails;
 import com.example.demo.dto.TokenDto;
 import com.example.demo.enums.ExceptionEnum;
 import com.example.demo.exception.ApiException;
@@ -13,8 +14,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -86,7 +85,9 @@ public class JwtTokenUtil {
                         .collect(Collectors.toList());
 
         // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.getSubject(), "", authorities);
+
+//        UserDetails principal = new User(claims.getSubject(), "", authorities);
+        CustomMemberDetails principal = new CustomMemberDetails(claims.getSubject(),"",authorities);
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
 
 
@@ -124,5 +125,9 @@ public class JwtTokenUtil {
         // 현재 시간
         long now = new Date().getTime();
         return (expiration.getTime() - now);
+    }
+
+    public String getUsername(String token) {
+        return parseClaims(token).getSubject();
     }
 }

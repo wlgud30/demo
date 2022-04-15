@@ -24,10 +24,10 @@ public class MemberController {
         return "hello world";
     }
 
-    @GetMapping("/member/{member_id}")
-    public ResponseEntity<ResponseDto> getMember(@PathVariable Long member_id){
+    @GetMapping("/member")
+    public ResponseEntity<ResponseDto> getMember(){
         log.debug("member service test");
-        return memberService.getMember(member_id);
+        return memberService.getMember();
     }
 
     @PostMapping("/join")

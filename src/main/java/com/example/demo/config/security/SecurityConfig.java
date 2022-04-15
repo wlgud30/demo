@@ -3,10 +3,10 @@ package com.example.demo.config.security;
 import com.example.demo.config.jwt.JwtAuthenticationFilter;
 import com.example.demo.config.jwt.JwtEntryPoint;
 import com.example.demo.config.jwt.JwtExceptionFilter;
-import com.example.demo.util.jwtUtil.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -23,8 +23,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtEntryPoint jwtEntryPoint;
     private final JwtExceptionFilter jwtExceptionFilter;
-    private final RedisTemplate<String,String> redisTemplate;
-    private final JwtTokenUtil jwtTokenUtil;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final CustomMemberDetailService customMemberDetailService;
+
+    @Override
+    @Bean
+    public AuthenticationManager authenticationManagerBean() throws Exception{
+        return super.authenticationManagerBean();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -61,7 +67,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().disable() // 6
                 .sessionManagement().sessionCreationPolicy(STATELESS)
                 .and() // 7
-                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenUtil, redisTemplate), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         // JwtAuthenticationFilter를 UsernamePasswordAuthentictaionFilter 전에 적용시킨다.
 
         http.addFilterBefore(jwtExceptionFilter, JwtAuthenticationFilter.class);
@@ -73,6 +79,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         web.ignoring()
                 .antMatchers("/h2-console/**","/favicon.ico","swagger-ui.html");
     }
+
+
+    @Override
+    protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+        // add our Users for in memory authentication
+        // auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
+        auth.userDetailsService(customMemberDetailService).passwordEncoder(passwordEncoder());
+    }
+//
+//    @Bean
+//    @Override
+//    public AuthenticationManager authenticationManagerBean() throws Exception {
+//        return super.authenticationManagerBean();
+//    }
 
 
 }

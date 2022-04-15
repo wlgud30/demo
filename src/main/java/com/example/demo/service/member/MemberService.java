@@ -1,5 +1,7 @@
 package com.example.demo.service.member;
 
+import com.example.demo.config.security.CustomMemberDetailService;
+import com.example.demo.config.security.SecurityUtil;
 import com.example.demo.domain.Member;
 import com.example.demo.dto.ResponseDto;
 import com.example.demo.dto.TokenDto;
@@ -14,9 +16,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -35,13 +40,15 @@ public class MemberService {
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final AuthenticationManager authenticationManager;
+    private final CustomMemberDetailService customMemberDetailService;
 
-    public ResponseEntity<ResponseDto> getMember(Long member_id){
+    public ResponseEntity<ResponseDto> getMember(){
 
-        Member member = memberRepository.findById(member_id)
+        Member member = memberRepository.findById(SecurityUtil.getCurrentUser().getUserId())
                 .orElseThrow(RuntimeException::new);
-
-        return responseUtil.successResponse("사용자를 조회합니다.",member.getUsername());
+        log.info("security util get user email : "+SecurityUtil.getCurrentUser());
+        return responseUtil.successResponse("사용자를 조회합니다.",member);
     }
 
     @Transactional
@@ -68,12 +75,15 @@ public class MemberService {
 
         // 1. Login ID/PW 를 기반으로 Authentication 객체 생성
         // 이때 authentication 는 인증 여부를 확인하는 authenticated 값이 false
-        UsernamePasswordAuthenticationToken authenticationToken = loginDto.toAuthentication();
-
+//        UsernamePasswordAuthenticationToken authenticationToken = loginDto.toAuthentication();
+//        UsernamePasswordAuthenticationToken authenticationToken = customMemberDetailService.loadUserByUsername(loginDto.getEmail());
         // 2. 실제 검증 (사용자 비밀번호 체크)이 이루어지는 부분
-        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
-        Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
+        UserDetails userDetails = customMemberDetailService.loadUserByUsername(loginDto.getEmail());
+        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails,null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        // authenticate 매서드가 실행될 때 CustomUserDetailsService 에서 만든 loadUserByUsername 메서드가 실행
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         // 3. 인증 정보를 기반으로 JWT 토큰 생성
         TokenDto tokenInfo = jwtTokenUtil.generateToken(authentication);
 
