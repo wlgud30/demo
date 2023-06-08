@@ -3,6 +3,7 @@ package com.example.demo.config.security;
 import com.example.demo.config.jwt.JwtAuthenticationFilter;
 import com.example.demo.config.jwt.JwtEntryPoint;
 import com.example.demo.config.jwt.JwtExceptionFilter;
+import com.example.demo.service.member.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -25,6 +26,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtExceptionFilter jwtExceptionFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomMemberDetailService customMemberDetailService;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
     @Override
     @Bean
@@ -39,8 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-//        http.authorizeRequests()
-//                .antMatchers("*").permitAll();
+
         //csrf 설정 비활성화
         http.csrf().disable()
                 //exception 핸들링 클래스 추가
@@ -57,9 +59,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //권한설정
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/join","/api","/auth/**","/swagger*/**","/swagger*","/webjars/**","/v2/**","/exception","/login","/api/reissue").permitAll()
+                .antMatchers("/api/join","/api","/auth/**","/swagger*/**","/swagger*","/webjars/**","/v2/**","/exception","/login").permitAll()
                 .antMatchers("/api/user/*","/api/user/*/*","/api/user/*/*/*","/api/user/*/*/*/*").hasRole("USER")
-                .anyRequest().permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .oauth2Login()
+//                .authorizationEndpoint().baseUri("/oauth2/authorize")
+//                .authorizationRequestRepository()
+//                .and()
+                .redirectionEndpoint()
+                .baseUri("/login/oauth2/code/**")
+                .and()
+                    .userInfoEndpoint().userService(customOAuth2UserService)
+                .and()
+                .successHandler(oAuth2LoginSuccessHandler)
                 .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtEntryPoint)
@@ -84,15 +97,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // add our Users for in memory authentication
-        // auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
         auth.userDetailsService(customMemberDetailService).passwordEncoder(passwordEncoder());
     }
-//
-//    @Bean
-//    @Override
-//    public AuthenticationManager authenticationManagerBean() throws Exception {
-//        return super.authenticationManagerBean();
-//    }
-
-
 }

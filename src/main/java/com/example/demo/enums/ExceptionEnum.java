@@ -10,10 +10,11 @@ public enum ExceptionEnum {
 
     EXPIRED_JWT_EXCEPTION(HttpStatus.UNAUTHORIZED,"만료된 토큰입니다.",0),
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰 입니다.",1),
-    SIGNATURE_TOKEN(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰 입니다.",2),
-    NOT_FOUND_TOKEN(HttpStatus.UNAUTHORIZED,"유효하지 않은 토큰 입니다.",3),
+    SIGNATURE_TOKEN(HttpStatus.UNAUTHORIZED,"서명을 확인 할 수 없습니다.",2),
+    NOT_FOUND_TOKEN(HttpStatus.UNAUTHORIZED,"토큰을 찾을 수 없습니다.",3),
     BAD_REQUEST(HttpStatus.BAD_REQUEST,4),
     NO_AUTHENTICATION_INFORMATION(HttpStatus.BAD_REQUEST,"인증정보가 존재하지 않습니다.",5),
+    LOGIN_REQUIRED(HttpStatus.UNAUTHORIZED,"로그인이 필요합니다.",6),
     ;
 
     private final HttpStatus status;

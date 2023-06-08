@@ -1,5 +1,6 @@
 package com.example.demo.domain;
 
+import com.example.demo.enums.LoginProvider;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,6 +37,12 @@ public class Member{
     @Column(name = "username")
     private String username;
 
+    @Column(name = "provider")
+    private LoginProvider provider;
+
+    @Column(name = "providerId")
+    private String providerId;
+
     @OneToMany(mappedBy = "member", cascade = ALL, orphanRemoval = true,fetch = FetchType.EAGER)
     @JsonManagedReference
     @Builder.Default
@@ -56,6 +63,11 @@ public class Member{
         return authorities.stream()
                 .map(Authority::getRole)
                 .collect(toList());
+    }
+
+    public Member update(String username){
+        this.username = username;
+        return this;
     }
 
 }

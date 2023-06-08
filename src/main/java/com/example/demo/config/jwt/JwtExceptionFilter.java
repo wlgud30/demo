@@ -1,8 +1,10 @@
 package com.example.demo.config.jwt;
 
+import com.example.demo.dto.ResponseDto;
 import com.example.demo.exception.ApiException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.json.simple.JSONObject;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -11,11 +13,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.LinkedHashMap;
 
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtExceptionFilter extends OncePerRequestFilter {
+
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain chain) throws ServletException, IOException {
@@ -28,16 +32,8 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 
     private void setResponse(HttpServletResponse response, ApiException exceptionCode) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-
-        LinkedHashMap<String, Object> hashMap = new LinkedHashMap<>();
-        hashMap.put("code", exceptionCode.getError().getErrorCode());
-        hashMap.put("message", exceptionCode.getError().getMessage());
-        hashMap.put("httpStatus",exceptionCode.getError().getStatus().getReasonPhrase());
-        hashMap.put("result",0);
-        log.info(hashMap.toString());
-        JSONObject responseJson = new JSONObject(hashMap);
-
-        response.getWriter().print(responseJson);
+        response.setStatus(401);
+        var result = ResponseDto.failApi().e(exceptionCode).build();
+        response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }

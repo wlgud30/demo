@@ -1,5 +1,6 @@
 package com.example.demo.dto;
 
+import com.example.demo.exception.ApiException;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
@@ -29,5 +30,13 @@ public class ResponseDto {
         this.httpStatus = httpStatus;
         this.message = message;
         this.result = result;
+    }
+
+    @Builder(builderMethodName = "failApi", builderClassName = "failApi")
+    public ResponseDto(ApiException e) {
+        this.code = e.getError().getErrorCode();
+        this.httpStatus = e.getError().getStatus();
+        this.message = e.getError().getMessage();
+        this.result = null;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.demo.repository.member;
 
 import com.example.demo.domain.Member;
+import com.example.demo.enums.LoginProvider;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -14,4 +15,6 @@ public interface MemberRepository extends JpaRepository<Member,Long> {
     Optional<Member> findByUsernameWithAuthority(String username);
 
     Optional<Member> findByEmail(String email);
+
+    Optional<Member> findByEmailAndProvider(String email, LoginProvider provider);
 }

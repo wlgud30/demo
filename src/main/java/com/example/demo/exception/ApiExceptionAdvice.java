@@ -17,11 +17,11 @@ public class ApiExceptionAdvice {
 
     @ExceptionHandler(ApiException.class)
     public ResponseEntity<ResponseDto> exceptionHandler(ApiException e){
-        if(e.getError_msg()!=null){
-            log.error(e.getError_msg());
-            return responseUtil.errorResponse(e.getError_msg(),e.getError().getErrorCode());
+        if(e.getErrorMsg()!=null){
+            log.error(e.getErrorMsg());
+            return responseUtil.errorResponse(e,e.getErrorMsg());
         }
         log.error(e.getError().getMessage());
-        return responseUtil.errorResponse(e.getError().getMessage(),e.getError().getErrorCode());
+        return responseUtil.errorResponse(e);
     }
 }

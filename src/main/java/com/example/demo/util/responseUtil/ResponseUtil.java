@@ -1,6 +1,7 @@
 package com.example.demo.util.responseUtil;
 
 import com.example.demo.dto.ResponseDto;
+import com.example.demo.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,8 +10,6 @@ import org.springframework.stereotype.Service;
 @Service
 @Slf4j
 public class ResponseUtil {
-
-    private final Integer SUCCESS_DATA = 1;
 
     public ResponseEntity<ResponseDto> successResponse(String message, Object data){
         ResponseDto res = ResponseDto.success()
@@ -23,7 +22,7 @@ public class ResponseUtil {
     public ResponseEntity<ResponseDto> successResponse(String message){
         ResponseDto res = ResponseDto.success()
                 .message(message)
-                .result(SUCCESS_DATA)
+                .result(null)
                 .build();
         return createResponse(res);
     }
@@ -38,12 +37,20 @@ public class ResponseUtil {
         return createResponse(res);
     }
 
-    public ResponseEntity<ResponseDto> errorResponse(String message,Integer errorCode){
+    public ResponseEntity<ResponseDto> errorResponse(ApiException e){
         ResponseDto res = ResponseDto.fail()
-                .code(errorCode)
-                .httpStatus(HttpStatus.BAD_REQUEST)
-                .message(message)
-                .result(0)
+                .code(e.getError().getErrorCode())
+                .httpStatus(e.getError().getStatus())
+                .message(e.getError().getMessage())
+                .build();
+        return createResponse(res);
+    }
+
+    public ResponseEntity<ResponseDto> errorResponse(ApiException e,String message){
+        ResponseDto res = ResponseDto.fail()
+                .code(e.getError().getErrorCode())
+                .httpStatus(e.getError().getStatus())
+                .message(e.getError().getMessage())
                 .build();
         return createResponse(res);
     }
