@@ -21,7 +21,7 @@ import static javax.persistence.CascadeType.ALL;
 @Getter
 @NoArgsConstructor
 @Builder
-public class Member{
+public class Member extends BaseEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,9 +30,6 @@ public class Member{
 
     @Column(name = "email")
     private String email;
-
-    @Column(name = "password")
-    private String password;
 
     @Column(name = "username")
     private String username;
@@ -49,9 +46,8 @@ public class Member{
     private Set<Authority> authorities = new HashSet<>();
 
     @Builder
-    public Member(String email, String password, String username) {
+    public Member(String email, String username) {
         this.email = email;
-        this.password = password;
         this.username = username;
     }
 

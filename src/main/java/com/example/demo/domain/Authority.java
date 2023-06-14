@@ -23,8 +23,13 @@ public class Authority implements GrantedAuthority {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JsonBackReference
-    @JoinColumn(name = "id")
+    @JoinColumn(name = "memberId")
     private Member member;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonBackReference
+    @JoinColumn(name = "adminId")
+    private Admin admin;
 
     private String role;
 
@@ -35,11 +40,11 @@ public class Authority implements GrantedAuthority {
                 .build();
     }
 
-    public static Authority ofAdmin(Member member){
+    public static Authority ofAdmin(Admin admin){
         return Authority
                 .builder()
                 .role("ROLE_ADMIN")
-                .member(member)
+                .admin(admin)
                 .build();
     }
 

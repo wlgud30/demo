@@ -33,7 +33,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
     private void setResponse(HttpServletResponse response, ApiException exceptionCode) throws IOException {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(401);
-        var result = ResponseDto.failApi().e(exceptionCode).build();
+        var result = ResponseDto.<Void>failApiBuilder().e(exceptionCode.getError()).build();
         response.getWriter().write(objectMapper.writeValueAsString(result));
     }
 }

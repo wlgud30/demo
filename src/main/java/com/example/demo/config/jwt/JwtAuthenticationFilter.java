@@ -8,13 +8,11 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.security.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,7 +28,6 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenUtil jwtTokenUtil;
-    private final RedisTemplate<String,String> redisTemplate;
     private final CustomMemberDetailService customMemberDetailService;
 
     private String getToken(HttpServletRequest request) {
@@ -77,20 +74,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String token = getToken((HttpServletRequest) request);
+        String token = getToken(request);
 
         // 2. validateToken 으로 토큰 유효성 검사
         try {
             if (token != null && jwtTokenUtil.validateToken(token)) {
-                // (추가) Redis 에 해당 accessToken logout 여부 확인
-                String isLogout = (String) redisTemplate.opsForValue().get(token);
-                if (ObjectUtils.isEmpty(isLogout)) {
-                    // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장
-                    String username = jwtTokenUtil.getUsername(token);
-                    log.info("JWT authentication filter : "+username);
-                    UserDetails userDetails = customMemberDetailService.loadUserByUsername(username);
-                    processSecurity(request,userDetails);
-                }
+                // 토큰이 유효할 경우 토큰에서 Authentication 객체를 가지고 와서 SecurityContext 에 저장
+                String username = jwtTokenUtil.getUsername(token);
+                log.info("JWT authentication filter : "+username);
+                UserDetails userDetails = customMemberDetailService.loadUserByUsername(username);
+                processSecurity(request,userDetails);
             }
         } catch (SignatureException e){
             log.error("토큰이 유효하지 않습니다.",e);

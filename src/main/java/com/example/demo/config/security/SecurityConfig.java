@@ -26,6 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final JwtExceptionFilter jwtExceptionFilter;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final CustomMemberDetailService customMemberDetailService;
+    private final CustomAdminDetailService customAdminDetailService;
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
 
@@ -59,7 +60,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 //권한설정
                 .and()
                 .authorizeRequests()
-                .antMatchers("/api/join","/api","/auth/**","/swagger*/**","/swagger*","/webjars/**","/v2/**","/exception","/login").permitAll()
+                .antMatchers("/favicon.ico","/api/join","/api","/auth/**","/swagger*/**","/swagger*","/webjars/**","/v2/**","/exception","/login","/","/api-docs/*").permitAll()
                 .antMatchers("/api/user/*","/api/user/*/*","/api/user/*/*/*","/api/user/*/*/*/*").hasRole("USER")
                 .anyRequest().authenticated()
                 .and()
@@ -98,5 +99,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // add our Users for in memory authentication
         auth.userDetailsService(customMemberDetailService).passwordEncoder(passwordEncoder());
+        auth.userDetailsService(customAdminDetailService).passwordEncoder(passwordEncoder());
     }
 }

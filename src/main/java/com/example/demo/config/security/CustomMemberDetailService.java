@@ -8,6 +8,7 @@ import com.example.demo.repository.authority.AuthorityRepository;
 import com.example.demo.repository.member.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -18,6 +19,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @RequiredArgsConstructor
@@ -36,30 +39,26 @@ public class CustomMemberDetailService implements UserDetailsService {
 //    }
 
     @Override
+    @Cacheable(value = "Member", key="#username", cacheManager="cacheManager")
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        log.info(username + "여기 맞냐?");
-        Member member = memberRepository.findByEmail(username)
+        log.info(username);
+        Member member = memberRepository.findByProviderId(username)
                 .orElseThrow(() -> new UsernameNotFoundException("해당하는 유저를 찾을 수 없습니다."));
         log.info(member.toString());
         return CustomMemberDetails.builder()
                 .username(member.getEmail())
-                .password(member.getPassword())
                 .userId(member.getId())
                 .isEnabled(true)
                 .isAccountNonExpired(true)
                 .isAccountNonLocked(true)
                 .isCredentialsNonExpired(true)
                 .authorities(member.getAuthorities())
+                .roles(member.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(toList()))
                 .build();
     }
 
-    // 해당하는 User 의 데이터가 존재한다면 UserDetails 객체로 만들어서 리턴
-//    private UserDetails createUserDetails(Member users) {
-//        return new User(users.getEmail(), users.getPassword(), users.getAuthorities());
-//    }
-
-    private Collection<GrantedAuthority> getAuthorities(Long user_id) {
-        List<Authority> authList = authoritiesRepository.findByUserId(user_id)
+    private Collection<GrantedAuthority> getAuthorities(Long userId) {
+        List<Authority> authList = authoritiesRepository.findByUserId(userId)
                 .orElseThrow(()-> new ApiException(ExceptionEnum.BAD_REQUEST,"권한 정보를 찾을 수 없습니다."));
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Authority authority : authList) {

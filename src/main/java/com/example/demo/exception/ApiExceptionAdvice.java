@@ -12,16 +12,13 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RequiredArgsConstructor
 public class ApiExceptionAdvice {
-
-    private final ResponseUtil responseUtil;
-
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ResponseDto> exceptionHandler(ApiException e){
+    public ResponseEntity<ResponseDto<Void>> exceptionHandler(ApiException e){
         if(e.getErrorMsg()!=null){
             log.error(e.getErrorMsg());
-            return responseUtil.errorResponse(e,e.getErrorMsg());
+            return ResponseUtil.errorResponse(e,e.getErrorMsg());
         }
         log.error(e.getError().getMessage());
-        return responseUtil.errorResponse(e);
+        return ResponseUtil.errorResponse(e);
     }
 }

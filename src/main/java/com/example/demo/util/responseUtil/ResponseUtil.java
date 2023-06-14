@@ -5,68 +5,44 @@ import com.example.demo.exception.ApiException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 
-@Service
 @Slf4j
 public class ResponseUtil {
 
-    public ResponseEntity<ResponseDto> successResponse(String message, Object data){
-        ResponseDto res = ResponseDto.success()
+    public static <T> ResponseEntity<ResponseDto<T>> successResponse(String message, T data){
+        ResponseDto<T> res = ResponseDto.<T>successBuilder()
                 .message(message)
                 .result(data)
                 .build();
-        return createResponse(res);
+        return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
-    public ResponseEntity<ResponseDto> successResponse(String message){
-        ResponseDto res = ResponseDto.success()
+    public static ResponseEntity<ResponseDto<Void>> successResponse(String message){
+        ResponseDto<Void> res = ResponseDto.<Void>successBuilder()
                 .message(message)
                 .result(null)
                 .build();
-        return createResponse(res);
+        return new ResponseEntity<>(res,HttpStatus.OK);
     }
 
-    public ResponseEntity<ResponseDto> badRequestResponse(String message){
-        ResponseDto res = ResponseDto.fail()
-                .code(400)
-                .httpStatus(HttpStatus.BAD_REQUEST)
+    public static ResponseEntity<ResponseDto<Void>> errorResponse(ApiException e){
+        ResponseDto<Void> res = ResponseDto.<Void>failBuilder()
+                .code(e.getError().getErrorCode())
+                .httpStatus(e.getError().getStatus())
+                .message(e.getError().getMessage())
+                .build();
+        return new ResponseEntity<>(res,e.getError().getStatus());
+    }
+
+    public static ResponseEntity<ResponseDto<Void>> errorResponse(ApiException e, String message){
+        ResponseDto<Void> res = ResponseDto.<Void>failBuilder()
+                .code(e.getError().getErrorCode())
+                .httpStatus(e.getError().getStatus())
                 .message(message)
-                .result(0)
                 .build();
-        return createResponse(res);
+        return new ResponseEntity<>(res,e.getError().getStatus());
     }
 
-    public ResponseEntity<ResponseDto> errorResponse(ApiException e){
-        ResponseDto res = ResponseDto.fail()
-                .code(e.getError().getErrorCode())
-                .httpStatus(e.getError().getStatus())
-                .message(e.getError().getMessage())
-                .build();
-        return createResponse(res);
-    }
-
-    public ResponseEntity<ResponseDto> errorResponse(ApiException e,String message){
-        ResponseDto res = ResponseDto.fail()
-                .code(e.getError().getErrorCode())
-                .httpStatus(e.getError().getStatus())
-                .message(e.getError().getMessage())
-                .build();
-        return createResponse(res);
-    }
-
-    public ResponseEntity<ResponseDto> tokenVerificationFail(String errorMessage){
-        ResponseDto res = ResponseDto
-                .fail()
-                .code(401)
-                .httpStatus(HttpStatus.UNAUTHORIZED)
-                .message(errorMessage)
-                .result(0)
-                .build();
-        return createResponse(res);
-    }
-
-    public ResponseEntity<ResponseDto> createResponse(ResponseDto res){
-        return new ResponseEntity<>(res,res.getHttpStatus());
+    private ResponseUtil() {
     }
 }

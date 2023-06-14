@@ -36,6 +36,8 @@ spring:
   redis:
     port: 6379
     host: localhost
+  cache:
+    type: redis
   security:
     oauth2:
       client:
@@ -78,4 +80,4 @@ spring-doc:
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   paths-to-match:
-    - /v1/**
+    - /api/**

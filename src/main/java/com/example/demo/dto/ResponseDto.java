@@ -1,42 +1,49 @@
 package com.example.demo.dto;
 
-import com.example.demo.exception.ApiException;
+import com.example.demo.enums.ExceptionEnum;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.Nullable;
 
 @Data
-public class ResponseDto {
+@Schema(implementation = ResponseDto.class)
+public class ResponseDto<T> {
 
+    @Schema(description = "성공 여부",example = "true",requiredMode = Schema.RequiredMode.REQUIRED)
+    private Boolean success;
+    @Schema(description = "응답 코드",example = "200",requiredMode = Schema.RequiredMode.REQUIRED)
     private Integer code;
-
-    private HttpStatus httpStatus;
-
+    @Schema(description = "응답 메세지",example = "string",requiredMode = Schema.RequiredMode.REQUIRED)
     private String message;
+    @Schema(description = "응답 바디",example = "object",requiredMode = Schema.RequiredMode.NOT_REQUIRED)
+    @JsonInclude(JsonInclude.Include.ALWAYS)
+    @Nullable
+    private T result;
 
-    private Object result;
-
-    @Builder(builderMethodName = "success", builderClassName = "success")
-    public ResponseDto(String message, Object result) {
-        this.code = 200;
-        this.httpStatus = HttpStatus.OK;
+    @Builder(builderMethodName = "successBuilder", builderClassName = "successBuilder")
+    public ResponseDto(String message, T result) {
+        this.success = true;
+        this.code = HttpStatus.OK.value();
         this.message = message;
         this.result = result;
     }
 
-    @Builder(builderMethodName = "fail", builderClassName = "fail")
-    public ResponseDto(Integer code, HttpStatus httpStatus, String message, Object result) {
+    @Builder(builderMethodName = "failBuilder", builderClassName = "failBuilder")
+    public ResponseDto(Integer code, HttpStatus httpStatus, String message, T result) {
+        this.success = false;
         this.code = code;
-        this.httpStatus = httpStatus;
         this.message = message;
         this.result = result;
     }
 
-    @Builder(builderMethodName = "failApi", builderClassName = "failApi")
-    public ResponseDto(ApiException e) {
-        this.code = e.getError().getErrorCode();
-        this.httpStatus = e.getError().getStatus();
-        this.message = e.getError().getMessage();
+    @Builder(builderMethodName = "failApiBuilder", builderClassName = "failApiBuilder")
+    public ResponseDto(ExceptionEnum e) {
+        this.success = false;
+        this.code = e.getErrorCode();
+        this.message = e.getMessage();
         this.result = null;
     }
 }

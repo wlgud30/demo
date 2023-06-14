@@ -17,10 +17,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.stream.Collectors;
+import java.util.*;
+
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Component
@@ -41,16 +40,17 @@ public class JwtTokenUtil {
     // 유저 정보를 가지고 AccessToken, RefreshToken 을 생성하는 메서드
     public TokenDto generateToken(Authentication authentication) {
         // 권한 가져오기
-        String authorities = authentication.getAuthorities().stream()
+        List<String> authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+                .filter(authority -> authority.startsWith("ROLE_"))
+                .collect(toList());
 
         long now = (new Date()).getTime();
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim(AUTHORITIES_KEY, authorities)
+                .claim(AUTHORITIES_KEY, createClaims(authentication, authorities))
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
@@ -75,14 +75,14 @@ public class JwtTokenUtil {
         Claims claims = parseClaims(accessToken);
 
         if (claims.get(AUTHORITIES_KEY) == null) {
-            throw new RuntimeException("권한 정보가 없는 토큰입니다.");
+            throw new ApiException(ExceptionEnum.NO_AUTHENTICATION_INFORMATION);
         }
 
         // 클레임에서 권한 정보 가져오기
         Collection<? extends GrantedAuthority> authorities =
                 Arrays.stream(claims.get(AUTHORITIES_KEY).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
-                        .collect(Collectors.toList());
+                        .collect(toList());
 
         // UserDetails 객체를 만들어서 Authentication 리턴
 
@@ -130,5 +130,15 @@ public class JwtTokenUtil {
 
     public String getUsername(String token) {
         return parseClaims(token).getSubject();
+    }
+
+    private Map<String,Object> createClaims(Authentication authentication, List<String> authorities){
+        Map<String,Object> claims = Jwts.claims().setSubject(authentication.getName());
+//        var memberDetails = (CustomMemberDetails) authentication.getDetails();
+//        claims.put(AUTHORITIES_KEY,authorities.stream().map(s -> s.toString()).collect(Collectors.toList()));
+        claims.put("username",authentication.getName());
+        claims.put("roles",authorities);
+        claims.put("id",authentication.getDetails());
+        return claims;
     }
 }

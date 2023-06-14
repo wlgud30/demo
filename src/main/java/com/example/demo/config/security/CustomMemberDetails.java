@@ -1,13 +1,12 @@
 package com.example.demo.config.security;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 
 
 /**
@@ -15,6 +14,7 @@ import java.util.Collection;
  */
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
 @Data
 public class CustomMemberDetails implements UserDetails {
@@ -26,19 +26,9 @@ public class CustomMemberDetails implements UserDetails {
     private boolean isAccountNonExpired;
     private boolean isAccountNonLocked;
     private boolean isCredentialsNonExpired;
+    @JsonIgnore
     private Collection<? extends GrantedAuthority> authorities;
-
-    @Builder
-    public CustomMemberDetails(String username, String password, Long userId, boolean isEnabled, boolean isAccountNonExpired, boolean isAccountNonLocked, boolean isCredentialsNonExpired, Collection<? extends GrantedAuthority> authorities) {
-        this.username = username;
-        this.password = password;
-        this.userId = userId;
-        this.isEnabled = isEnabled;
-        this.isAccountNonExpired = isAccountNonExpired;
-        this.isAccountNonLocked = isAccountNonLocked;
-        this.isCredentialsNonExpired = isCredentialsNonExpired;
-        this.authorities = authorities;
-    }
+    private List<String> roles;
 
     public CustomMemberDetails(String username, String password, Collection<? extends GrantedAuthority> authorities) {
         this.username = username;
